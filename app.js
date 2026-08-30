@@ -60,15 +60,32 @@ function drawMoon(cx, cy, radius, image, positionAngle) {
   ctx.restore();
 }
 
-function moonOnlyDataUrl() {
-  const output = document.createElement('canvas');
-  output.width = 1080; output.height = 1080;
-  const out = output.getContext('2d');
-  out.fillStyle = '#000'; out.fillRect(0, 0, output.width, output.height);
-  out.translate(540, 540);
-  out.rotate((90 - lastMoon.positionAngle) * Math.PI / 180);
-  out.drawImage(lastMoon.image, -540, -540, 1080, 1080);
-  return output.toDataURL('image/png');
+async function exportPng(sourceCanvas, filename) {
+  // Conversione sincrona: su iPhone preserva l'attivazione del gesto di tap
+  // necessaria per aprire navigator.share().
+  const base64 = sourceCanvas.toDataURL('image/png').split(',')[1];
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+  const file = new File([bytes], filename, { type: 'image/png' });
+
+  // Safari per iPhone ignora spesso <a download> per data: URL. Il foglio Condividi
+  // permette invece di salvare l'immagine direttamente nell'app Foto o in File.
+  if (navigator.share && (!navigator.canShare || navigator.canShare({ files: [file] }))) {
+    try {
+      await navigator.share({ files: [file], title: 'Luna da casa' });
+      return;
+    } catch (error) {
+      if (error.name === 'AbortError') return;
+      // Se la condivisione non è disponibile, prosegue con il download standard.
+    }
+  }
+
+  const url = URL.createObjectURL(file);
+  const link = document.createElement('a');
+  link.href = url; link.download = filename; link.target = '_blank';
+  document.body.appendChild(link); link.click(); link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1500);
 }
 
 function drawCard(data) {
@@ -128,6 +145,20 @@ $('locate').addEventListener('click', () => navigator.geolocation?.getCurrentPos
   ({coords}) => { $('lat').value = coords.latitude.toFixed(4); $('lon').value = coords.longitude.toFixed(4); status.textContent = 'Coordinate aggiornate dal dispositivo.'; generate(); },
   () => { status.textContent = 'Posizione non disponibile: verifica il permesso del browser.'; }, {enableHighAccuracy:true, timeout:10000}
 ));
-$('download').addEventListener('click', () => { const a = document.createElement('a'); a.download = `moon_${lastDate.toISOString().replaceAll(':','-').slice(0,19)}.png`; a.href = canvas.toDataURL('image/png'); a.click(); });
-$('downloadMoon').addEventListener('click', () => { if (!lastMoon) return; const a = document.createElement('a'); a.download = `moon_only_${lastDate.toISOString().replaceAll(':','-').slice(0,19)}.png`; a.href = moonOnlyDataUrl(); a.click(); });
+$('download').addEventListener('click', async () => {
+  try { await exportPng(canvas, `moon_${lastDate.toISOString().replaceAll(':','-').slice(0,19)}.png`); }
+  catch (error) { status.textContent = `Errore nel download: ${error.message}`; }
+});
+$('downloadMoon').addEventListener('click', async () => {
+  if (!lastMoon) return;
+  try {
+    const moonCanvas = document.createElement('canvas');
+    moonCanvas.width = 1080; moonCanvas.height = 1080;
+    const moonContext = moonCanvas.getContext('2d');
+    moonContext.fillStyle = '#000'; moonContext.fillRect(0, 0, 1080, 1080);
+    moonContext.translate(540, 540); moonContext.rotate((90 - lastMoon.positionAngle) * Math.PI / 180);
+    moonContext.drawImage(lastMoon.image, -540, -540, 1080, 1080);
+    await exportPng(moonCanvas, `moon_only_${lastDate.toISOString().replaceAll(':','-').slice(0,19)}.png`);
+  } catch (error) { status.textContent = `Errore nel download: ${error.message}`; }
+});
 $('dateTime').value = localInputValue(new Date()); generate();
