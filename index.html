@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Luna vista dalla propria posizione: effemeridi locali e immagine PNG scaricabile." />
+    <title>Luna da casa</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <p class="eyebrow">EFFEMERIDI LOCALI · BROWSER-ONLY</p>
+        <h1>Luna da casa</h1>
+        <p>Genera una tavola della Luna con dati astronomici aggiornati per la tua posizione.</p>
+      </header>
+
+      <section class="controls" aria-label="Configurazione">
+        <label>Luogo<input id="place" value="Frattaminore (NA)" maxlength="42" /></label>
+        <label>Latitudine<input id="lat" type="number" value="40.9565" min="-90" max="90" step="0.0001" /></label>
+        <label>Longitudine<input id="lon" type="number" value="14.2736" min="-180" max="180" step="0.0001" /></label>
+        <label>Data e ora locale<input id="dateTime" type="datetime-local" /></label>
+        <label>Fuso orario<select id="timezone"><option value="Europe/Rome">Europe/Rome</option><option value="local">Fuso del browser</option></select></label>
+        <div class="actions">
+          <button id="now" type="button">Adesso</button>
+          <button id="locate" type="button">Usa la mia posizione</button>
+          <button id="generate" type="button" class="primary">Genera</button>
+          <button id="download" type="button" disabled>Scarica PNG</button>
+        </div>
+      </section>
+
+      <p id="status" role="status">Pronto.</p>
+      <section class="output" aria-label="Immagine generata">
+        <canvas id="moonCanvas" width="1600" height="900"></canvas>
+      </section>
+      <p class="note">Le effemeridi sono calcolate localmente nel browser. Il disco è una visualizzazione procedurale della fase e non una fotografia NASA in tempo reale.</p>
+    </main>
+    <script src="assets/illumination.js"></script>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
