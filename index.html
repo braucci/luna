@@ -25,6 +25,7 @@
           <button id="now" type="button">Adesso</button>
           <button id="locate" type="button">Usa la mia posizione</button>
           <button id="generate" type="button" class="primary">Genera</button>
+          <button id="downloadMoon" type="button" disabled>Scarica solo Luna</button>
           <button id="download" type="button" disabled>Scarica PNG</button>
         </div>
       </section>
@@ -33,7 +34,7 @@
       <section class="output" aria-label="Immagine generata">
         <canvas id="moonCanvas" width="1600" height="900"></canvas>
       </section>
-      <p class="note">Le effemeridi sono calcolate localmente nel browser. Il disco è una visualizzazione procedurale della fase e non una fotografia NASA in tempo reale.</p>
+      <p class="note">Le effemeridi sono calcolate localmente nel browser; il disco è selezionato dal dataset fotografico NASA incluso nel progetto.</p>
     </main>
     <script src="assets/illumination.js"></script>
     <script type="module" src="app.js"></script>

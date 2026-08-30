@@ -9,6 +9,7 @@ const ctx = canvas.getContext('2d');
 const status = $('status');
 let lastDate = new Date();
 const moonImageCache = new Map();
+let lastMoon;
 
 function pad(n) { return String(n).padStart(2, '0'); }
 function localInputValue(date) { return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`; }
@@ -59,6 +60,17 @@ function drawMoon(cx, cy, radius, image, positionAngle) {
   ctx.restore();
 }
 
+function moonOnlyDataUrl() {
+  const output = document.createElement('canvas');
+  output.width = 1080; output.height = 1080;
+  const out = output.getContext('2d');
+  out.fillStyle = '#000'; out.fillRect(0, 0, output.width, output.height);
+  out.translate(540, 540);
+  out.rotate((90 - lastMoon.positionAngle) * Math.PI / 180);
+  out.drawImage(lastMoon.image, -540, -540, 1080, 1080);
+  return output.toDataURL('image/png');
+}
+
 function drawCard(data) {
   const { date, lat, lon, place, zone, moon, illum, image, positionAngle } = data;
   ctx.fillStyle = '#000'; ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -102,7 +114,8 @@ async function generate() {
     const image = await loadMoonImage(frame.img_num);
     const positionAngle = sunPositionAngle(date, lat, lon, moon);
     drawCard({date, lat, lon, place: $('place').value.trim() || 'Casa', zone, moon, illum, image, positionAngle});
-    lastDate = date; $('download').disabled = false;
+    lastDate = date; lastMoon = { image, positionAngle };
+    $('download').disabled = false; $('downloadMoon').disabled = false;
     status.textContent = `Frame NASA ${frame.img_num} · ${formatInZone(date, zone, {dateStyle:'medium', timeStyle:'medium'})}.`;
   } catch (error) {
     status.textContent = `Errore: ${error.message}`;
@@ -116,4 +129,5 @@ $('locate').addEventListener('click', () => navigator.geolocation?.getCurrentPos
   () => { status.textContent = 'Posizione non disponibile: verifica il permesso del browser.'; }, {enableHighAccuracy:true, timeout:10000}
 ));
 $('download').addEventListener('click', () => { const a = document.createElement('a'); a.download = `moon_${lastDate.toISOString().replaceAll(':','-').slice(0,19)}.png`; a.href = canvas.toDataURL('image/png'); a.click(); });
+$('downloadMoon').addEventListener('click', () => { if (!lastMoon) return; const a = document.createElement('a'); a.download = `moon_only_${lastDate.toISOString().replaceAll(':','-').slice(0,19)}.png`; a.href = moonOnlyDataUrl(); a.click(); });
 $('dateTime').value = localInputValue(new Date()); generate();

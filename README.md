@@ -2,6 +2,8 @@
 
 Pagina statica pronta per GitHub Pages. Genera una card PNG della Luna per Frattaminore (coordinate modificabili) con fase, illuminazione, distanza, diametro apparente, età, prossime luna nuova/piena, altezza e azimut.
 
+I pulsanti di download producono sia la card completa sia il PNG quadrato della sola Luna fotografica su sfondo nero.
+
 ## Cosa cambia rispetto a `luna_casa.py`
 
 Il programma Python richiamava `lunardelight/moon.py` e selezionava una delle 707 immagini NASA locali. Questa versione conserva lo stesso dataset in `assets/nasa/`, usa [SunCalc](https://github.com/mourner/suncalc) per le effemeridi nel browser, seleziona il frame NASA più vicino alla fase calcolata e lo ruota per la posizione locale. Il disco mostrato e scaricato è quindi una vera immagine NASA della Luna, non un disegno procedurale.
